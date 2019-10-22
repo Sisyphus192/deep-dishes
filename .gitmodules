@@ -1,0 +1,3 @@
+[submodule "recipe-scrapers"]
+	path = recipe-scrapers
+	url = https://github.com/hhursev/recipe-scrapers.git
