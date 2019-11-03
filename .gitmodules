@@ -1,6 +1,3 @@
 [submodule "recipe-scrapers"]
 	path = recipe-scrapers
 	url = https://github.com/Sisyphus192/recipe-scrapers.git
-[submodule "ingredient-phrase-tagger"]
-	path = ingredient-phrase-tagger
-	url = https://github.com/Sisyphus192/ingredient-phrase-tagger.git
