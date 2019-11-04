@@ -92,10 +92,9 @@ def process_data(input_data):
 
 
     # Create our features dict
-    input_data = input_data["input"].apply(
+    input_data["features"] = input_data["input"].apply(
         lambda doc: [word2features(doc, i) for i in range(len(doc))]
     )
-
     return input_data
 
 
@@ -103,6 +102,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--crf", action="store_true", help="CRF Training Data")
     parser.add_argument("--epi", action="store_true", help="Epicurious Data")
+    parser.add_argument("-v", action="store_true", help="Verbose")
     args = parser.parse_args()
 
     # Load spacy NLP model
@@ -113,17 +113,25 @@ if __name__ == '__main__':
         training_data = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_data.pickle"))
         test_data = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_data.pickle"))
 
-        training_data = process_data(training_data)
-        test_data = process_data(test_data)
+        training_features = process_data(training_data)
+        test_features = process_data(test_data)
 
         # Save features to file
-        training_data.to_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_features.pickle"))
-        test_data.to_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_features.pickle"))
+        training_features.to_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_features.pickle"))
+        test_features.to_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_features.pickle"))
 
     if args.epi:
+        print("CREATING FEATURES FOR EPI DATA")
         # Load cleaned data
-        epi_data = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/epi_data.pickle"))
-        epi_data = process_data(epi_data)
-        epi_data.to_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/epi_features.pickle"))
+        epi_ingredients = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/epi_ingredients.pickle"))
+        if args.v:
+            print(epi_ingredients.head())
+
+        # Create Features
+        epi_ingredients = process_data(epi_ingredients)
+        if args.v:
+            print(epi_ingredients.head())
+
+        epi_ingredients.to_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/epi_features.pickle"))
 
     

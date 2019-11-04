@@ -18,20 +18,25 @@ def clean_html(s):
                 if match:
                     for m in match:
                         s[col] = re.sub(r"\s*\(?<.*see\s*recipe.*>\)?", "", s[col])
-                        if col == "input" and s["comment"] == s["comment"]:
+                        if col == "input" and "comment" in s.keys() and s["comment"] == s["comment"]:
                             s["comment"] = re.sub(r"see recipe", "", s["comment"])
+            except TypeError:
+                print("ERROR: Removing <see recipe>, " + col + " ", s)
+            try:
                 # this will remove all: see <a href=...>recipe</a>
                 match = re.findall(r"\(?\s*(see)\s*?<.*recipe.*>\)?", s[col])
                 if match:
                     for m in match:
                         s[col] = re.sub(r"\(?\s*(see)\s*?<.*recipe.*>\)?", "", s[col])
-                        if col == "input" and s["comment"] == s["comment"]:
+                        if col == "input" and "comment" in s.keys() and s["comment"] == s["comment"]:
                             s["comment"] = re.sub(r"see recipe", "", s["comment"])
+            except TypeError:
+                print("ERROR: Removing see <recipe>, " + col + " ", s)
                 # this will remove all: epi:recipelink stuff
                 match = re.findall(r"\<?\/?epi:recipelink\>?", s[col]) 
                 if match:
                     for m in match:
-                        s[col] = re.sub(r"\<?\/?epi:recipelink\>?", "", s)
+                        s[col] = re.sub(r"\<?\/?epi:recipelink\>?", "", s[col])
                 # This will remove all <span> and misc <a href=...>...</a>
                 match = re.findall(r"<.*?>", s[col])
                 if match:
@@ -49,8 +54,7 @@ def clean_html(s):
                 else:
                     s[col] = s[col].strip()
 
-            except TypeError:
-                print("ERROR CLEANING HTML: " + col + ": ", s)
+            
     return s
 
 
@@ -123,7 +127,7 @@ def fix_abbreviations(s):
     columns = ["input", "unit"]
     for col in columns:
         # replace oz. with ounce
-        if s[col] == s[col]:
+        if col in s.keys() and s[col] == s[col]:
             match = re.findall(r"([0-9])\s*oz\.*", s[col])
             if match:
                 for m in match:
