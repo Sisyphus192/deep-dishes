@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+import sys
+import os
+import argparse
 import spacy
 import pandas as pd
 
@@ -80,32 +84,46 @@ def word2features(sent, i):
 
     return features
 
+def process_data(input_data):
+    # have spacy parse the input string with the full pipeline to generate features this will take some time
+    input_data["input"] = list(
+        nlp.pipe(input_data["input"].astype("unicode").values, batch_size=50)
+    )
 
-if __name__ == "main":
+
+    # Create our features dict
+    input_data = input_data["input"].apply(
+        lambda doc: [word2features(doc, i) for i in range(len(doc))]
+    )
+
+    return input_data
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--crf", action="store_true", help="CRF Training Data")
+    parser.add_argument("--epi", action="store_true", help="Epicurious Data")
+    args = parser.parse_args()
 
     # Load spacy NLP model
     nlp = spacy.load("en_core_web_lg", disable=["ner", "textcat"])
+    
+    if args.crf:
+        # Load cleaned data
+        training_data = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_data.pickle"))
+        test_data = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_data.pickle"))
 
-    # Load cleaned data
-    training_data = pd.read_pickle("../../data/interim/crf_training_data.pickle")
-    test_data = pd.read_pickle("../../data/interim/crf_test_data.pickle")
+        training_data = process_data(training_data)
+        test_data = process_data(test_data)
 
-    # have spacy parse the input string with the full pipeline to generate features this will take some time
-    training_data["input"] = list(
-        nlp.pipe(training_data["input"].astype("unicode").values, batch_size=50)
-    )
-    test_data["input"] = list(
-        nlp.pipe(test_data["input"].astype("unicode").values, batch_size=50)
-    )
+        # Save features to file
+        training_data.to_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_features.pickle"))
+        test_data.to_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_features.pickle"))
 
-    # Create our features dict
-    crf_training_features = training_data["input"].apply(
-        lambda doc: [word2features(doc, i) for i in range(len(doc))]
-    )
-    crf_test_features = test_data["input"].apply(
-        lambda doc: [word2features(doc, i) for i in range(len(doc))]
-    )
+    if args.epi:
+        # Load cleaned data
+        epi_data = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/epi_data.pickle"))
+        epi_data = process_data(epi_data)
+        epi_data.to_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/epi_features.pickle"))
 
-    # Save features to file
-    crf_training_features.to_pickle("../../data/interim/crf_training_features.pickle")
-    crf_test_features.to_pickle("../../data/interim/crf_test_features.pickle")
+    

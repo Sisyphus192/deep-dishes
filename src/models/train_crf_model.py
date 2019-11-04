@@ -1,14 +1,21 @@
+#!/usr/bin/env python3
+import os
+import sys
 import pandas as pd
 from joblib import dump
 import sklearn_crfsuite
 from sklearn_crfsuite import metrics
 
-if __name__ == "__main__":
-    X_train = pd.read_pickle("../../data/interim/crf_training_features.pickle")
-    y_train = pd.read_pickle("../../data/interim/crf_training_labels.pickle")
+import os
+cwd = os.getcwd()
 
-    X_test = pd.read_pickle("../../data/interim/crf_test_features.pickle")
-    y_test = pd.read_pickle("../../data/interim/crf_test_labels.pickle")
+if __name__ == '__main__':
+    print("TRAINING CRF MODEL")
+    X_train = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_features.pickle"))
+    y_train = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_labels.pickle"))
+
+    X_test = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_features.pickle"))
+    y_test = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_labels.pickle"))
 
     crf = sklearn_crfsuite.CRF(
         algorithm="lbfgs",
@@ -22,7 +29,7 @@ if __name__ == "__main__":
     labels = list(crf.classes_)
 
     y_pred = crf.predict(X_test)
-    metrics.flat_f1_score(y_test, y_pred, average="weighted", labels=labels)
+    print(metrics.flat_f1_score(y_test, y_pred, average="weighted", labels=labels))
 
     # group B and I results
     sorted_labels = sorted(labels, key=lambda name: (name[1:], name[0]))
@@ -31,4 +38,4 @@ if __name__ == "__main__":
             y_test, y_pred, labels=sorted_labels, digits=3
         )
     )
-    dump(crf, '../../models/crf_model.joblib') 
+    dump(crf, os.path.join(os.path.dirname(__file__), '../../models/crf_model.joblib')) 

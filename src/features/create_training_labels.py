@@ -1,4 +1,7 @@
-from decimal import Decimal
+#!/usr/bin/env python3
+import os
+import sys
+from decimal import Decimal, InvalidOperation
 import spacy
 import pandas as pd
 
@@ -46,7 +49,7 @@ def add_prefixes(data):
     Reference: http://www.kdd.cis.ksu.edu/Courses/Spring-2013/CIS798/Handouts/04-ramshaw95text.pdf
     """
     prev_tag = None
-    newData = []
+    new_data = []
 
     for token, tag in data:
 
@@ -60,13 +63,13 @@ def add_prefixes(data):
     return new_data
 
 
-if __name__ == "main":
+if __name__ == "__main__":
 
     nlp = spacy.load("en_core_web_lg", disable=["tagger", "parser", "ner", "textcat"])
 
     # Load raw data and do some preprocessing
-    training_data = pd.read_pickle("../../data/interim/crf_training_data.pickle")
-    test_data = pd.read_pickle("../../data/interim/crf_test_data.pickle")
+    training_data = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_data.pickle"))
+    test_data = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_data.pickle"))
 
     # have spacy parse the input string with the full pipeline to generate features this will take some time
     training_data["input"] = list(
@@ -137,5 +140,5 @@ if __name__ == "main":
         )
     )
 
-    crf_training_labels.to_pickle("../../data/interim/crf_training_labels.pickle")
-    crf_test_labels.to_pickle("../../data/interim/crf_test_labels.pickle")
+    crf_training_labels.to_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_labels.pickle"))
+    crf_test_labels.to_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_labels.pickle"))
