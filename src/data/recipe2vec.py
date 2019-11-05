@@ -97,8 +97,8 @@ if __name__ == "__main__":
         # Load features
         epi_ingredients = pd.read_hdf(
             os.path.join(
-                os.path.dirname(__file__), "../../data/interim/epi_features.pickle"
-            ), 'table'
+                os.path.dirname(__file__), "../../data/interim/epi_features.h5"
+            )
         )
         if args.v:
             print(epi_ingredients.head(10))
@@ -168,9 +168,9 @@ if __name__ == "__main__":
         if args.v:
             print(epi_ingredients.head())
 
-        epi_data = pd.read_pickle(
+        epi_data = pd.read_hdf(
             os.path.join(
-                os.path.dirname(__file__), "../../data/interim/epi_data.pickle"
+                os.path.dirname(__file__), "../../data/interim/epi_data.h5"
             )
         )
         if args.v:
@@ -199,8 +199,8 @@ if __name__ == "__main__":
             print(epi_vec.head())
 
         # Let's save our dataframe so we can look at it without having to reload and recompute everything later.
-        epi_vec.to_pickle(
+        epi_vec.to_hdf(
             os.path.join(
-                os.path.dirname(__file__), "../../data/processed/epi_vector.pickle"
-            )
+                os.path.dirname(__file__), "../../data/processed/epi_vector.h5"
+            ), mode='w', format="fixed"
         )

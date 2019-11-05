@@ -11,11 +11,11 @@ cwd = os.getcwd()
 
 if __name__ == '__main__':
     print("TRAINING CRF MODEL")
-    X_train = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_features.pickle"))
-    y_train = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_labels.pickle"))
+    X_train = pd.read_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_features.h5"))
+    y_train = pd.read_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_labels.h5"))
 
-    X_test = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_features.pickle"))
-    y_test = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_labels.pickle"))
+    X_test = pd.read_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_features.h5"))
+    y_test = pd.read_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_labels.h5"))
 
     print(X_train[0])
 
