@@ -144,7 +144,7 @@ if __name__ == "__main__":
             mode="w",
             format="fixed",
         )
-        epi_ingredients.to_pickle(
+        epi_ingredients.to_hdf(
             os.path.join(
                 os.path.dirname(__file__), "../../data/interim/epi_ingredients.h5"
             ),
