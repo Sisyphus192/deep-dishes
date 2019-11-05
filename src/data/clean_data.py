@@ -24,10 +24,8 @@ def process_data(input_data):
     input_data.dropna(axis=0, subset=["input"], inplace=True)
     if args.v:
         print(
-                "Dropped {} rows with no ingredients".format(
-                    num_rows - input_data.shape[0]
-                )
-            )
+            "Dropped {} rows with no ingredients".format(num_rows - input_data.shape[0])
+        )
 
     # Unicode has numerous characters to represent fractions like ¾, we remove these
     input_data["input"] = input_data["input"].apply(
@@ -73,15 +71,21 @@ if __name__ == "__main__":
             print(input_data.head())
         # Split data into training and testing set
         training_data, test_data = train_test_split(input_data, test_size=0.2)
-        training_data.to_pickle(
+        training_data.to_hdf(
             os.path.join(
-                os.path.dirname(__file__), "../../data/interim/crf_training_data.pickle"
-            )
+                os.path.dirname(__file__), "../../data/interim/crf_training_data.h5"
+            ),
+            key="df",
+            mode="w",
+            format="fixed",
         )
-        test_data.to_pickle(
+        test_data.to_hdf(
             os.path.join(
-                os.path.dirname(__file__), "../../data/interim/crf_test_data.pickle"
-            )
+                os.path.dirname(__file__), "../../data/interim/crf_test_data.h5"
+            ),
+            key="df",
+            mode="w",
+            format="fixed",
         )
     if args.epi:
         # Load data scrapped from epicurious
@@ -134,13 +138,17 @@ if __name__ == "__main__":
         epi_ingredients = process_data(epi_ingredients)
 
         # Save both dataframes to pickle
-        epi_data.to_pickle(
-            os.path.join(
-                os.path.dirname(__file__), "../../data/interim/epi_data.pickle"
-            )
+        epi_data.to_hdf(
+            os.path.join(os.path.dirname(__file__), "../../data/interim/epi_data.h5"),
+            key="df",
+            mode="w",
+            format="fixed",
         )
         epi_ingredients.to_pickle(
             os.path.join(
-                os.path.dirname(__file__), "../../data/interim/epi_ingredients.pickle"
-            )
+                os.path.dirname(__file__), "../../data/interim/epi_ingredients.h5"
+            ),
+            key="df",
+            mode="w",
+            format="fixed",
         )

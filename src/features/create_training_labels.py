@@ -68,8 +68,8 @@ if __name__ == "__main__":
     nlp = spacy.load("en_core_web_lg", disable=["tagger", "parser", "ner", "textcat"])
 
     # Load raw data and do some preprocessing
-    training_data = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_data.pickle"))
-    test_data = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_data.pickle"))
+    training_data = pd.read_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_data.h5"), 'df')
+    test_data = pd.read_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_data.h5"), 'df')
 
     # have spacy parse the input string with the full pipeline to generate features this will take some time
     training_data["input"] = list(
@@ -140,5 +140,5 @@ if __name__ == "__main__":
         )
     )
 
-    crf_training_labels.to_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_labels.pickle"))
-    crf_test_labels.to_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_labels.pickle"))
+    crf_training_labels.to_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_labels.h5"), key="df", mode='w', format="fixed")
+    crf_test_labels.to_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_labels.h5"), key="df", mode='w', format="fixed")
