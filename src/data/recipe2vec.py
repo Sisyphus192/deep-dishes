@@ -98,7 +98,7 @@ if __name__ == "__main__":
         epi_ingredients = pd.read_hdf(
             os.path.join(
                 os.path.dirname(__file__), "../../data/interim/epi_features.h5"
-            )
+            ), 'df'
         )
         if args.v:
             print(epi_ingredients.head(10))
@@ -169,9 +169,7 @@ if __name__ == "__main__":
             print(epi_ingredients.head())
 
         epi_data = pd.read_hdf(
-            os.path.join(
-                os.path.dirname(__file__), "../../data/interim/epi_data.h5"
-            )
+            os.path.join(os.path.dirname(__file__), "../../data/interim/epi_data.h5"), 'df'
         )
         if args.v:
             print(epi_data.head())
@@ -202,5 +200,8 @@ if __name__ == "__main__":
         epi_vec.to_hdf(
             os.path.join(
                 os.path.dirname(__file__), "../../data/processed/epi_vector.h5"
-            ), mode='w', format="fixed"
+            ),
+            key="df",
+            mode="w",
+            format="fixed",
         )

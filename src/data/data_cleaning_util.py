@@ -158,6 +158,7 @@ def fix_nyt_abbreviations(s):
                     s[col] = re.sub(r"[Tt]sp\.*", "teaspoon", s[col])
     return s
 
+
 def multiply_qty(s):
     """
     Many ingredients are written in the form 2 8.5-ounce cans...
@@ -176,6 +177,7 @@ def multiply_qty(s):
                 # probably a pretty good guess that the qty was only one of these two numbers, update it with the new num
                 s["qty"] = str(round(num, 3))
     return s
+
 
 def fix_abbreviations(ingredient):
     """

@@ -110,8 +110,8 @@ if __name__ == '__main__':
     
     if args.crf:
         # Load cleaned data
-        training_data = pd.read_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_data.h5"))
-        test_data = pd.read_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_data.h5"))
+        training_data = pd.read_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_data.h5"), 'df')
+        test_data = pd.read_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_data.h5"), 'df')
 
         if args.v:
             print(training_data.head())
@@ -125,13 +125,13 @@ if __name__ == '__main__':
             print(training_features.head())
 
         # Save features to file
-        training_features["features"].to_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_features.h5"), mode='w', format="fixed")
-        test_features["features"].to_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_features.h5"), mode='w', format="fixed")
+        training_features["features"].to_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_features.h5"), key="df", mode='w', format="fixed")
+        test_features["features"].to_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_features.h5"), key="df", mode='w', format="fixed")
 
     if args.epi:
         print("CREATING FEATURES FOR EPI DATA")
         # Load cleaned data
-        epi_ingredients = pd.read_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/epi_ingredients.h5"))
+        epi_ingredients = pd.read_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/epi_ingredients.h5"), 'df')
         if args.v:
             print(epi_ingredients.head())
 
@@ -140,5 +140,5 @@ if __name__ == '__main__':
         if args.v:
             print(epi_ingredients.head())
 
-        epi_ingredients.to_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/epi_features.h5"), mode='w', format="fixed")
+        epi_ingredients.to_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/epi_features.h5"), key="df", mode='w', format="fixed")
     
