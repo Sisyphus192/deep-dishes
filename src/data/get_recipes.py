@@ -238,7 +238,9 @@ def scrape_fn(page_num):
 
 
 def quick_load(site_str):
-    return load_recipes(path.join("../../data/raw", "recipes_raw_{}.json".format(site_str)))
+    return load_recipes(
+        path.join("../../data/raw", "recipes_raw_{}.json".format(site_str))
+    )
 
 
 def load_recipes(filename):
@@ -247,7 +249,9 @@ def load_recipes(filename):
 
 
 def quick_save(site_str, recipes):
-    save_recipes(path.join("../../data/raw", "recipes_raw_{}.json".format(site_str)), recipes)
+    save_recipes(
+        path.join("../../data/raw", "recipes_raw_{}.json".format(site_str)), recipes
+    )
 
 
 def save_recipes(filename, recipes):

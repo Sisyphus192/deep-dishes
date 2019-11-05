@@ -8,7 +8,7 @@ set -e
 # Echo commands to stdout.
 set -x
 
-src/data/clean_data.py --crf
-src/features/create_features.py --crf
+src/data/clean_data.py --crf -v
+src/features/create_features.py --crf -v
 src/features/create_training_labels.py
 src/models/train_crf_model.py

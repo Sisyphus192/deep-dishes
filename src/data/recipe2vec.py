@@ -8,6 +8,7 @@ from joblib import load
 import numpy as np
 import re
 
+
 def qty2float(qty):
     try:
         qty = float(qty)
@@ -15,6 +16,7 @@ def qty2float(qty):
         qty = np.nan
 
     return qty
+
 
 def smartJoin(words):
     """
@@ -88,10 +90,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Load our trained CRF model
-    crf = load( os.path.join(
-                os.path.dirname(__file__), "../../models/crf_model.joblib"
-            ))
-    
+    crf = load(os.path.join(os.path.dirname(__file__), "../../models/crf_model.joblib"))
+
     if args.epi:
         print("CONVERTING EPI DATA TO VECTORS")
         # Load features
@@ -104,10 +104,13 @@ if __name__ == "__main__":
             print(epi_ingredients.head(10))
 
         epi_ingredients["predicted"] = crf.predict(epi_ingredients["features"].values)
-        epi_ingredients["input"] = epi_ingredients["input"].apply(lambda doc: [token.lemma_ for token in doc])
+        epi_ingredients["input"] = epi_ingredients["input"].apply(
+            lambda doc: [token.lemma_ for token in doc]
+        )
 
-
-        parsed = epi_ingredients.apply(lambda x: format_ingredient_output(x.input, x.predicted), axis=1)
+        parsed = epi_ingredients.apply(
+            lambda x: format_ingredient_output(x.input, x.predicted), axis=1
+        )
 
         epi_ingredients = pd.DataFrame(parsed.tolist(), index=parsed.index)
         if args.v:
@@ -122,12 +125,16 @@ if __name__ == "__main__":
         epi_ingredients.loc[epi_ingredients.unit == "teaspoon", "unit"] = "milliliters"
 
         epi_ingredients.loc[epi_ingredients.unit == "tablespoon", "qty"] *= 14.7868
-        epi_ingredients.loc[epi_ingredients.unit == "tablespoon", "unit"] = "milliliters"
+        epi_ingredients.loc[
+            epi_ingredients.unit == "tablespoon", "unit"
+        ] = "milliliters"
 
         epi_ingredients.loc[epi_ingredients.unit == "cup", "qty"] *= 236.588
         epi_ingredients.loc[epi_ingredients.unit == "cup", "unit"] = "milliliters"
 
-        epi_ingredients.loc[epi_ingredients.unit == "pinch", "qty"] *= 4.92892 * (1 / 16)
+        epi_ingredients.loc[epi_ingredients.unit == "pinch", "qty"] *= 4.92892 * (
+            1 / 16
+        )
         epi_ingredients.loc[epi_ingredients.unit == "pinch", "unit"] = "milliliters"
 
         epi_ingredients.loc[epi_ingredients.unit == "dash", "qty"] *= 4.92892 * (1 / 8)
@@ -137,7 +144,9 @@ if __name__ == "__main__":
         epi_ingredients.loc[epi_ingredients.unit == "ounce", "unit"] = "grams"
 
         epi_ingredients.loc[epi_ingredients.unit == "fluid ounce", "qty"] *= 29.5735
-        epi_ingredients.loc[epi_ingredients.unit == "fluid ounce", "unit"] = "milliliters"
+        epi_ingredients.loc[
+            epi_ingredients.unit == "fluid ounce", "unit"
+        ] = "milliliters"
 
         epi_ingredients.loc[epi_ingredients.unit == "pint", "qty"] *= 473.176
         epi_ingredients.loc[epi_ingredients.unit == "pint", "unit"] = "milliliters"
@@ -170,8 +179,20 @@ if __name__ == "__main__":
         epi_vec = epi_ingredients.pivot_table(
             index=epi_ingredients.index, columns="name", values="qty", aggfunc=np.mean
         )
-        epi_vec = epi_vec.join(epi_data[["avg_rating", "best_rating", "worst_rating", "prepare_again_rating",
-                                            "num_reviews", "total_time", "tags", "title"]])
+        epi_vec = epi_vec.join(
+            epi_data[
+                [
+                    "avg_rating",
+                    "best_rating",
+                    "worst_rating",
+                    "prepare_again_rating",
+                    "num_reviews",
+                    "total_time",
+                    "tags",
+                    "title",
+                ]
+            ]
+        )
 
         epi_vec.fillna(0, inplace=True)
         if args.v:

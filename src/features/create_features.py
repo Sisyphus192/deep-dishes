@@ -113,12 +113,20 @@ if __name__ == '__main__':
         training_data = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_data.pickle"))
         test_data = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_data.pickle"))
 
+        if args.v:
+            print(training_data.head())
+            print(test_data.head())
+
         training_features = process_data(training_data)
         test_features = process_data(test_data)
 
+        if args.v:
+            print(training_features.head())
+            print(training_features.head())
+
         # Save features to file
-        training_features.to_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_features.pickle"))
-        test_features.to_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_features.pickle"))
+        training_features["features"].to_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_features.pickle"))
+        test_features["features"].to_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_features.pickle"))
 
     if args.epi:
         print("CREATING FEATURES FOR EPI DATA")

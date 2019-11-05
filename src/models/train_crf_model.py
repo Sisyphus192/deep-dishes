@@ -17,6 +17,8 @@ if __name__ == '__main__':
     X_test = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_features.pickle"))
     y_test = pd.read_pickle(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_labels.pickle"))
 
+    print(X_train[0])
+
     crf = sklearn_crfsuite.CRF(
         algorithm="lbfgs",
         c1=0.1,
