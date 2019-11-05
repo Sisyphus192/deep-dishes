@@ -95,10 +95,10 @@ if __name__ == "__main__":
     if args.epi:
         print("CONVERTING EPI DATA TO VECTORS")
         # Load features
-        epi_ingredients = pd.read_pickle(
+        epi_ingredients = pd.read_hdf(
             os.path.join(
                 os.path.dirname(__file__), "../../data/interim/epi_features.pickle"
-            )
+            ), 'table'
         )
         if args.v:
             print(epi_ingredients.head(10))
