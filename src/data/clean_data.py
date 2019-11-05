@@ -42,7 +42,7 @@ def process_data(input_data):
     if args.crf:
         input_data = input_data.apply(data_cleaning_util.fix_nyt_abbreviations, axis=1)
     elif args.epi:
-        nput_data["input"] = input_data["input"].apply(
+        input_data["input"] = input_data["input"].apply(
             data_cleaning_util.fix_abbreviations
         )
 
