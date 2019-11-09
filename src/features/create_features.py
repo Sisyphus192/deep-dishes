@@ -141,5 +141,5 @@ if __name__ == '__main__':
         if args.v:
             print(epi_ingredients.head())
 
-        epi_ingredients.to_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/epi_features.h5"), key="df", mode='w', format="fixed")
+        epi_ingredients.to_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/epi_features.h5"), key="df", mode='w', format="table")
     
