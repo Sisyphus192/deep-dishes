@@ -3,7 +3,7 @@ from fractions import Fraction
 import unicodedata
 
 
-def clean_nyt_html(s):
+def clean_nyt_html(row):
     """
     This will replace all html tags that were not stripped
     from the NYT data
@@ -11,46 +11,47 @@ def clean_nyt_html(s):
     columns = ["input", "name", "comment"]
     for col in columns:
         # This filters out NaN values so they wont get caught in the try except
-        if s[col] == s[col]:
+        if row[col] == row[col]:
             try:
                 # this will remove all: <a href=...>see recipe</a>
-                match = re.findall(r"\s*\(?<.*see\s*recipe.*>\)?", s[col])
+                match = re.findall(r"\s*\(?<.*see\s*recipe.*>\)?", row[col])
                 if match:
                     for m in match:
-                        s[col] = re.sub(r"\s*\(?<.*see\s*recipe.*>\)?", "", s[col])
-                        if col == "input" and s["comment"] == s["comment"]:
-                            s["comment"] = re.sub(r"see recipe", "", s["comment"])
+                        row[col] = re.sub(r"\s*\(?<.*see\s*recipe.*>\)?", "", row[col])
+                        if col == "input" and row["comment"] == row["comment"]:
+                            row["comment"] = re.sub(r"see recipe", "", row["comment"])
             except TypeError:
-                print("ERROR: Removing <see recipe>, " + col + " ", s)
+                print("ERROR: Removing <see recipe>, " + col + " ", row)
             try:
                 # this will remove all: see <a href=...>recipe</a>
-                match = re.findall(r"\(?\s*(see)\s*?<.*recipe.*>\)?", s[col])
+                match = re.findall(r"\(?\s*(see)\s*?<.*recipe.*>\)?", row[col])
                 if match:
                     for m in match:
-                        s[col] = re.sub(r"\(?\s*(see)\s*?<.*recipe.*>\)?", "", s[col])
-                        if col == "input" and s["comment"] == s["comment"]:
-                            s["comment"] = re.sub(r"see recipe", "", s["comment"])
+                        row[col] = re.sub(
+                            r"\(?\s*(see)\s*?<.*recipe.*>\)?", "", row[col]
+                        )
+                        if col == "input" and row["comment"] == row["comment"]:
+                            row["comment"] = re.sub(r"see recipe", "", row["comment"])
             except TypeError:
-                print("ERROR: Removing see <recipe>, " + col + " ", s)
+                print("ERROR: Removing see <recipe>, " + col + " ", row)
 
             # This will remove all <span> and misc <a href=...>...</a>
-            match = re.findall(r"<.*?>", s[col])
+            match = re.findall(r"<.*?>", row[col])
             if match:
                 for m in match:
-                    s[col] = re.sub(r"<.*?>", "", s[col])
+                    row[col] = re.sub(r"<.*?>", "", row[col])
             # this will remove all un-escapped '\n' from the original html
-            match = re.findall(r"\s*\\n\s*", s[col])
+            match = re.findall(r"\s*\\n\s*", row[col])
             if match:
                 for m in match:
-                    s[col] = re.sub(r"\\n", " ", s[col])
+                    row[col] = re.sub(r"\\n", " ", row[col])
             # if the column is now blank becasue of what we removed, set it
             # to NaN so pandas can handle it easier
-            if not s[col]:
-                s[col] = float("nan")
+            if not row[col]:
+                row[col] = float("nan")
             else:
-                s[col] = s[col].strip()
-
-    return s
+                row[col] = row[col].strip()
+    return row
 
 
 def clean_epi_html(ingredient):
@@ -62,7 +63,7 @@ def clean_epi_html(ingredient):
     return ingredient
 
 
-def clean_unicode_fractions(s):
+def clean_unicode_fractions(ingredient):
     """
     Replace unicode fractions with ascii representation, preceded by a
     space.
@@ -71,112 +72,75 @@ def clean_unicode_fractions(s):
     """
     try:
         # match all mixed fractions with a unicode fraction (e.g. 1 ¾ or 1¾) and add them together
-        match = re.findall(r"(\d+)\s?([\u2150-\u215E\u00BC-\u00BE])", s)
+        match = re.findall(r"(\d+)\s?([\u2150-\u215E\u00BC-\u00BE])", ingredient)
         if match:
             for m in match:
                 num = float(m[0]) + float(Fraction(unicodedata.numeric(m[1])))
-                s = re.sub(
-                    r"(\d+)\s?([\u2150-\u215E\u00BC-\u00BE])", str(round(num, 3)), s
+                ingredient = re.sub(
+                    r"(\d+)\s?([\u2150-\u215E\u00BC-\u00BE])",
+                    str(round(num, 3)),
+                    ingredient,
                 )
 
         # match all other unicode fractions
-        match = re.findall(r"([\u2150-\u215E\u00BC-\u00BE])", s)
+        match = re.findall(r"([\u2150-\u215E\u00BC-\u00BE])", ingredient)
         if match:
             for m in match:
-                s = re.sub(
+                ingredient = re.sub(
                     r"([\u2150-\u215E\u00BC-\u00BE])",
                     str(round(float(Fraction(unicodedata.numeric(m))), 3)),
-                    s,
+                    ingredient,
                 )
     except TypeError:
-        print("ERROR CLEANING UNICODE: ", s)
-    return s
+        print("ERROR CLEANING UNICODE: ", ingredient)
+    return ingredient
 
 
-def merge_ranges(s):
-    """
-    Many ingredients are written "1 2-2 1/2 pound" this represents
-    an acceptable quantity range of 2 to 2.5. Because this will
-    make parseing harder we will replace the range with the average.
-    """
-    try:
-        match = re.findall(r"\d+\s\d+\-\d+\s*\d*\/*\d*", s["input"])
-
-    except TypeError:
-        print("error parsing: ", s)
-
-
-def merge_fractions(s):
+def merge_fractions(ingredient):
     """
     Merges mixed fractions: 1 2/3 => 1.67
     """
     try:
-        match = re.findall(r"(\d+)\s+(\d\/\d)", s)
+        match = re.findall(r"(\d+)\s+(\d\/\d)", ingredient)
         if match:
             for m in match:
                 num = float(m[0]) + float(Fraction(m[1]))
-                s = re.sub(r"(\d+)\s+(\d\/\d)", str(round(num, 3)), s)
+                ingredient = re.sub(r"(\d+)\s+(\d\/\d)", str(round(num, 3)), ingredient)
 
-        match = re.findall(r"(\d\/\d)", s)
+        match = re.findall(r"(\d\/\d)", ingredient)
         if match:
             for m in match:
                 num = float(Fraction(m))
-                s = re.sub(r"(\d\/\d)", str(round(num, 3)), s)
+                ingredient = re.sub(r"(\d\/\d)", str(round(num, 3)), ingredient)
     except ZeroDivisionError:
-        print(s)
-    return s
+        print(ingredient)
+    return ingredient
 
 
-def fix_nyt_abbreviations(s):
-    """
-    Converts instances of oz. and g. to ounce and gram respectively
-    """
-    columns = ["input", "unit"]
-    for col in columns:
-        # replace oz. with ounce
-        if s[col] == s[col]:
-            match = re.findall(r"([0-9])\s*oz\.*", s[col])
-            if match:
-                for m in match:
-                    s[col] = re.sub(r"([0-9])\s*oz\.*", m + " ounce", s[col])
-            # replace g. with gram
-            match = re.findall(r"([0-9])\s*g([^a-z])", s[col])
-            if match:
-                for m in match:
-                    s[col] = re.sub(
-                        r"([0-9])\s*g([^a-z])", m[0] + " gram" + m[1], s[col]
-                    )
-            # replace tbsp with tablespoon
-            match = re.findall(r"[Tt]bsp\.*", s[col])
-            if match:
-                for m in match:
-                    s[col] = re.sub(r"[Tt]bsp\.*", "tablespoon", s[col])
-            # replace tsp with teaspoon
-            match = re.findall(r"[Tt]sp\.*", s[col])
-            if match:
-                for m in match:
-                    s[col] = re.sub(r"[Tt]sp\.*", "teaspoon", s[col])
-    return s
-
-
-def multiply_qty(s):
-    """
-    Many ingredients are written in the form 2 8.5-ounce cans...
-    This is both tricky for the model to parse and made worse because
-    the labeled data incosistently labels the quanity as 2, 8.5, or 17.
-    We want to reuce all these to a single value:
-    2 8.5-ounce => 17.0-ounce
-    and update the quantity label as appropriate
-    """
-    match = re.findall(r"(\d+)\s+(\d+\.\d+)", s["input"])
-    if match:
-        for m in match:
-            num = float(m[0]) * float(m[1])
-            s["input"] = re.sub(r"(\d+)\s+(\d+\.\d+)", str(round(num, 3)), s["input"])
-            if float(m[0]) == float(s["qty"]) or float(m[1]) == float(s["qty"]):
-                # probably a pretty good guess that the qty was only one of these two numbers, update it with the new num
-                s["qty"] = str(round(num, 3))
-    return s
+def merge_quantities(row):
+    try:
+        match = re.findall(r"(\d+\.?\d*)\-?[\s\-][tor]+[\s\-](\d+\.?\d*)", row["input"])
+        if match:
+            for m in match:
+                num = (float(m[0]) + float(m[1])) / 2
+                row["input"] = re.sub(
+                    r"(\d+\.?\d*)\-?[\s\-][tor]+[\s\-](\d+\.?\d*)",
+                    str(round(num, 3)),
+                    row["input"],
+                )
+        match = re.findall(r"(\d+)\s+(\d+\.*\d*)", row["input"])
+        if match:
+            for m in match:
+                num = float(m[0]) * float(m[1])
+                row["input"] = re.sub(
+                    r"(\d+)\s+(\d+\.*\d*)", str(round(num, 3)), row["input"]
+                )
+                if float(m[0]) == row["qty"] or float(m[1]) == row["qty"]:
+                    # probably a pretty good guess that the qty was only one of these two numbers, update it with the new num
+                    row["qty"] = round(num, 3)
+    except TypeError:
+        print("Error Merging Ranges: ", row)
+    return row
 
 
 def fix_abbreviations(ingredient):
@@ -208,3 +172,47 @@ def fix_abbreviations(ingredient):
             for m in match:
                 ingredient = re.sub(r"[Tt]sp\.*", "teaspoon", ingredient)
     return ingredient
+
+
+def fix_inconsistencies(row):
+    if row["unit"] == row["unit"]:
+        match = re.findall(r"(\w+)\s(sprigs?)", row["unit"])
+        if match:
+            for m in match:
+                if row["comment"] == row["comment"]:
+                    row["comment"] += " " + m[0]
+                else:
+                    row["comment"] = m[0]
+                row["unit"] = m[1]
+    return row
+
+
+def fix_individual_rows(row):
+    if row["input"] == "3 crushed red peppers":
+        row["unit"] = float("nan")
+        row["comment"] = "crushed"
+    if row["input"] == "1 small-to-medium daikon radish (cut into 1-inch cubes)":
+        row["comment"] = row["unit"] + " " + row["comment"]
+        row["unit"] = float("nan")
+    if row["unit"] == "chopped":
+        row["comment"] = "chopped"
+        row["unit"] = float("nan")
+    if row["input"] == "1 heaping teaspoon black peppercorns":
+        row["comment"] = "heaping"
+        row["unit"] = "teaspoon"
+    if row["input"] == "a 10-pound piece of pork belly with the skin":
+        row["qty"] = 10
+        row["unit"] = "pound"
+    if row["input"] == "1 long soft baguette or loaf Cuban bread":
+        row["unit"] = float("nan")
+        row["comment"] = "long"
+    if row["input"] == "2 long red chilies, seeded and finely sliced":
+        row["unit"] = float("nan")
+        row["comment"] = "long " + row["comment"]
+    if row["input"] == "2 scant cups all-purpose flour":
+        row["unit"] = "cups"
+        row["comment"] = "scant"
+    if row["input"] == "4 ounces (1 stick) unsalted butter":
+        row["unit"] = "ounces"
+        row["comment"] = "(1 stick)"
+    return row

@@ -38,7 +38,11 @@ def process_data(input_data):
     input_data["input"] = input_data["input"].apply(data_cleaning_util.merge_fractions)
 
     if args.crf:
-        input_data = input_data.apply(data_cleaning_util.fix_nyt_abbreviations, axis=1)
+        input_data = input_data.apply(data_cleaning_util.merge_quantities, axis=1)
+        input_data["input"] = input_data["input"].apply(data_cleaning_util.fix_abbreviations)
+        input_data["unit"] = input_data["unit"].apply(data_cleaning_util.fix_abbreviations)
+        input_data = input_data.apply(data_cleaning_util.fix_inconsistencies, axis=1)
+        input_data = input_data.apply(data_cleaning_util.fix_individual_rows, axis=1)
     elif args.epi:
         input_data["input"] = input_data["input"].apply(
             data_cleaning_util.fix_abbreviations
@@ -69,6 +73,10 @@ if __name__ == "__main__":
         input_data = process_data(input_data)
         if args.v:
             print(input_data.head())
+
+        input_data["unit"] = input_data["unit"].fillna('')
+        input_data["comment"] = input_data["comment"].fillna('')
+        input_data["name"] = input_data["name"].fillna('')
         # Split data into training and testing set
         training_data, test_data = train_test_split(input_data, test_size=0.2)
         training_data.to_hdf(
@@ -96,6 +104,7 @@ if __name__ == "__main__":
             )
         )
         if args.v:
+            print("RAW EPI HEAD")
             print(epi_raw.head())
 
         # We need to transpose the matrix so that we have a the recipes as rows and ingredients as columns
@@ -103,6 +112,7 @@ if __name__ == "__main__":
 
         # Select a subset so processing happend faster
         if args.v:
+            print("TRANSPOSED EPI HEAD")
             print(epi_data.head())
 
         # Drop rows with empty ingredients
@@ -124,15 +134,38 @@ if __name__ == "__main__":
         epi_ingredients = epi_data.join(ingredients)
 
         # Drop non ingredient/yield columns from ingredient dataframe
-        epi_ingredients = epi_ingredients[["input", "yields"]]
+        epi_ingredients = epi_ingredients[["input"]]
 
         # Drop ingredient/yield columns from data dataframe
         del epi_data["ingredients"]
-        del epi_data["yields"]
+
+        print(epi_data["yields"].unique())
+
+        # Convert column dtypes
+        epi_data["avg_rating"] = epi_data["avg_rating"].astype('float64')
+        epi_data["best_rating"] = epi_data["best_rating"].astype('float64')
+        epi_data["num_reviews"] = epi_data["num_reviews"].astype('float64')
+        epi_data["prepare_again_rating"] = epi_data["prepare_again_rating"].astype('float64')
+        epi_data["worst_rating"] = epi_data["worst_rating"].astype('float64')
+        epi_data["instructions"] = epi_data["instructions"].astype(str)
+        epi_data["title"] = epi_data["title"].astype(str)
+        epi_data["yields"] = epi_data["yields"].apply(lambda x: int(x.split()[0]) if x!='' else float('nan'))
+        epi_data["yields"] = epi_data["yields"].astype('float64')
+
+        epi_data["total_time"] = epi_data["total_time"].astype('float64')
+        epi_data["tags"] = epi_data["tags"].apply(lambda d: d if isinstance(d, list) else [])
 
         if args.v:
+            print("TRANSPOSED EPI HEAD")
+            print(epi_data.dtypes)
             print(epi_data.head())
+            print(epi_data["yields"].isnull().values.any())
+
+            print("EPI INGREDIENTS")
+            print(epi_ingredients.dtypes)
             print(epi_ingredients.head())
+
+
 
         # Clean the ingredients
         epi_ingredients = process_data(epi_ingredients)
