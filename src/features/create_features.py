@@ -92,10 +92,10 @@ def process_data(input_data):
 
 
     # Create our features dict
-    input_data["features"] = input_data["input"].apply(
+    features = input_data["input"].apply(
         lambda doc: [word2features(doc, i) for i in range(len(doc))]
     )
-    return input_data
+    return features
 
 
 if __name__ == '__main__':
@@ -121,12 +121,13 @@ if __name__ == '__main__':
         test_features = process_data(test_data)
 
         if args.v:
+            print(type(training_features))
             print(training_features.head())
-            print(training_features.head())
+            print(test_features.head())
 
         # Save features to file
-        training_features["features"].to_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_features.h5"), key="df", mode='w', format="fixed")
-        test_features["features"].to_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_features.h5"), key="df", mode='w', format="fixed")
+        training_features.to_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_training_features.h5"), key="df", mode='w', format="fixed")
+        test_features.to_hdf(os.path.join(os.path.dirname(__file__), "../../data/interim/crf_test_features.h5"), key="df", mode='w', format="fixed")
 
     if args.epi:
         print("CREATING FEATURES FOR EPI DATA")
@@ -136,7 +137,7 @@ if __name__ == '__main__':
             print(epi_ingredients.head())
 
         # Create Features
-        epi_ingredients = process_data(epi_ingredients)
+        epi_ingredients["features"] = process_data(epi_ingredients)
         if args.v:
             print(epi_ingredients.head())
 
