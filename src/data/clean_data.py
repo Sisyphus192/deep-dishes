@@ -114,7 +114,7 @@ if __name__ == "__main__":
         if args.v:
             print("TRANSPOSED EPI HEAD")
             print(epi_data.head())
-
+        #epi_data = epi_data.iloc[:100]
         # Drop rows with empty ingredients
         num_rows = epi_data.shape[0]
         epi_data = epi_data[epi_data.astype(str)["ingredients"] != "[]"]
@@ -135,7 +135,15 @@ if __name__ == "__main__":
 
         # Drop non ingredient/yield columns from ingredient dataframe
         epi_ingredients = epi_ingredients[["input"]]
-
+        num_rows = epi_ingredients.shape[0]
+        epi_ingredients = epi_ingredients[epi_ingredients["input"] != ""]
+        if args.v:
+            print(
+                "Dropped {} rows with no ingredients".format(
+                    num_rows - epi_ingredients.shape[0]
+                )
+            )
+        print(epi_ingredients.loc["http://www.epicurious.com/recipes/food/views/roast-leg-of-lamb-with-tarragon-mint-butter-352043"])
         # Drop ingredient/yield columns from data dataframe
         del epi_data["ingredients"]
 
