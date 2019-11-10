@@ -100,7 +100,7 @@ if __name__ == "__main__":
                 os.path.dirname(__file__), "../../data/interim/epi_features.h5"
             ), 'df'
         )
-        
+
         if args.v:
             print(epi_ingredients.head(10))
 
@@ -169,9 +169,8 @@ if __name__ == "__main__":
         if args.v:
             print(epi_ingredients.head())
 
-        epi_data = pd.read_hdf(
-            os.path.join(os.path.dirname(__file__), "../../data/interim/epi_data.h5"), 'df'
-        )
+        epi_data = pd.read_feather(
+            os.path.join(os.path.dirname(__file__), "../../data/interim/epi_data.feather"))
         if args.v:
             print(epi_data.head())
 
@@ -198,11 +197,6 @@ if __name__ == "__main__":
             print(epi_vec.head())
 
         # Let's save our dataframe so we can look at it without having to reload and recompute everything later.
-        epi_vec.to_hdf(
+        epi_vec.to_feather(
             os.path.join(
-                os.path.dirname(__file__), "../../data/processed/epi_vector.h5"
-            ),
-            key="df",
-            mode="w",
-            format="fixed",
-        )
+                os.path.dirname(__file__), "../../data/processed/epi_vector.feather"))
