@@ -20,7 +20,7 @@ skip_list = []
 
 
 def get_recipe(url):
-
+    print(url)
     try:
         scraper = scrape_me(url)
     except:
@@ -131,6 +131,29 @@ def get_all_recipes_ar(page_num):
                     r["href"]
                     for r in recipe_link_items
                     if r is not None and r["href"].split("/")[1] == "recipe"
+                ]
+            )
+        )
+        return {base_url + r: get_recipe(base_url + r) for r in recipe_links}
+    except (HTTPError, URLError):
+        print("Could not parse page {}".format(url))
+        return []
+
+def get_all_recipes_se(page_num):
+    base_url = "https://www.seriouseats.com"
+    search_url_str = "recipes/?page"
+    url = "{}/{}={}".format(base_url, search_url_str, page_num)
+    try:
+        soup = BeautifulSoup(
+            request.urlopen(request.Request(url, headers=HEADERS)).read(), "html.parser"
+        )
+        recipe_link_items = soup.select("a.module__link")
+        recipe_links = list(
+            set(
+                [
+                    r["href"]
+                    for r in recipe_link_items
+                    if r is not None
                 ]
             )
         )
@@ -264,6 +287,7 @@ if __name__ == "__main__":
     parser.add_argument("--fn", action="store_true", help="Food Network")
     parser.add_argument("--epi", action="store_true", help="Epicurious")
     parser.add_argument("--ar", action="store_true", help="All Recipes")
+    parser.add_argument("--se", action="store_true", help="Serious Eats")
     parser.add_argument("--multi", action="store_true", help="Multi threading")
     parser.add_argument(
         "--append", action="store_true", help="Append scraping run to existing JSON doc"
@@ -287,3 +311,7 @@ if __name__ == "__main__":
     if args.ar:
         page_iter = range(args.start, args.pages + args.start)
         scrape_recipe_box(get_all_recipes_ar, "ar", page_iter, args.status)
+    if args.se:
+        page_iter = range(args.start, args.pages + args.start)
+        scrape_recipe_box(get_all_recipes_se, "se", page_iter, args.status)
+
