@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import os
+import uuid
 import argparse
 import spacy
 import pandas as pd
@@ -177,6 +178,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--crf", action="store_true", help="CRF Training Data")
     parser.add_argument("--epi", action="store_true", help="Epicurious Data")
+    parser.add_argument("--mba", action="store_true", help="Market Basket Analysis")
     parser.add_argument("-v", action="store_true", help="Verbose")
     args = parser.parse_args()
 
@@ -344,3 +346,28 @@ if __name__ == '__main__':
             mode="w",
             format="fixed")
     
+
+    if args.mba:
+        if os.path.isfile(os.path.join(os.path.dirname(__file__), "../../data/processed/epi_vector.h5")):
+
+            epi_df = pd.read_hdf(os.path.join(os.path.dirname(__file__), "../../data/processed/epi_vector.h5"))
+            dat = epi_df.values[:, :-8]
+            columns = list(epi_df)
+            new_vec = []
+            for recipe in dat:
+                ind = uuid.uuid4().hex
+                for i in range(len(recipe)):
+                    if recipe[i] != 0:
+                        new_vec.append([ind, columns[i]])
+
+            basketized = pd.DataFrame(new_vec, columns=["index", "name"]).set_index('index', drop=False)
+            del basketized["index"]
+            print(basketized.head())
+
+            basketized.to_hdf(os.path.join(
+                os.path.dirname(__file__), "../../data/processed/basketized.h5"),
+                key="df",
+                mode="w",
+                format="fixed")
+        else:
+            print("First, generate epi_vector file.")

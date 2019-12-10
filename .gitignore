@@ -1,1 +1,3 @@
 .autogit
+venv/
+**/**/__pycache__/
