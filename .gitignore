@@ -1,1 +1,4 @@
 .autogit
+venv/
+**/__pycache__/
+data/processed/
