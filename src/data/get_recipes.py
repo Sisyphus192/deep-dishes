@@ -20,7 +20,7 @@ skip_list = []
 
 
 def get_recipe(url):
-    print(url)
+    #print(url)
     try:
         scraper = scrape_me(url)
     except:
@@ -157,7 +157,8 @@ def get_all_recipes_se(page_num):
                 ]
             )
         )
-        return {base_url + r: get_recipe(base_url + r) for r in recipe_links}
+        recipe_links = [r for r in recipe_links if r not in skip_list]
+        return {r: get_recipe(r) for r in recipe_links}
     except (HTTPError, URLError):
         print("Could not parse page {}".format(url))
         return []
